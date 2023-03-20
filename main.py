@@ -3,13 +3,25 @@ from relay import Relay
 from temp_sensor import TempSensor
 from wlan import WLAN
 from led import Led
+import mynetwork
 
-from ufirestore.json import FirebaseJson
-from ufirestore import ufirestore
+from ufirestore import ufirebaseio
 from time import sleep_ms
+import _thread
+import urequests
 
 #led_relay = Relay(25, "led")
 #led_relay.run_time = 5
+
+running = "none"
+
+
+def update_running(value):
+    global running
+    running = value
+    print(running)
+    mynetwork.complete_job()
+
 
 led = Led()
 
@@ -23,15 +35,19 @@ sensor.on()
 
 wifi = WLAN()
 
+#ufirebaseio.ping()
+#ufirebaseio.login()
+#mynetwork.wifi = wifi
+#mynetwork.run_job(job=[ufirebaseio.login, []])
+#mynetwork.run_job([ufirebaseio.get, ["hotbox/running.json", update_running, True]])
 
-
-access_token = b'eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCIsICJraWQiOiAiYmI3NGE2Yzc4MGYzMjRmYjQ4NTc5YTBiN2IxZmIwZDUzY2JjMjlhOCJ9.eyJpc3MiOiAiZmlyZWJhc2UtYWRtaW5zZGstd3Q4ZjBAcm41bm90aWZpY2F0aW9ucy5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsICJzdWIiOiAiZmlyZWJhc2UtYWRtaW5zZGstd3Q4ZjBAcm41bm90aWZpY2F0aW9ucy5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsICJhdWQiOiAiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCAidWlkIjogImpKWmpySE42OWNXRXUxeXk5MWJERnJFSnpHdTIiLCAiaWF0IjogMTY3OTA3NTYxOCwgImV4cCI6IDE2NzkwNzkyMTh9.LKP9gvQDTiJRYbzwBHG3V3gsr5-w4FYHtW8vO9UxrQN4AKvs5wH6RiIdkLSJXJ0gBccR_5O4WW6CdH4hrxG-80-uwfUqjfunOIOPLpsC-VDAAFaaWNprSUxKb9C1WqaJmx1jPoa3mz6adu0nTJKj2ieW5-kHEFJCEKjbcHK9bOj8X_Wvrk_Me-AQSEMgwhk9DldBD9hGKhyK0Q5DLxeJ5b5_IEd865ufgN5Ojdq7mUVGvI9TA7BjsyiPTyEkLmf1TLLP6GjZSWo-F_NHvPvtwKgZXuAL8hWG3kI3WVyjUuBWKZ_ro2ZVJUgbnf1X3pj8mpyQvtX9oMdonW7OZEg_8w'
-
-ufirestore.set_project_id("Rn5Notifications")
-ufirestore.set_access_token(access_token.decode())
-raw_doc = ufirestore.get("hotbox/running")
-doc = FirebaseJson.from_raw(raw_doc)
-print(doc)
+#_thread.start_new_thread(ufirebaseio.ping, [])
+if wifi.connected:
+    try:
+        response = urequests.request("GET", "https://rn5notifications-default-rtdb.firebaseio.com/hotbox/ping.json")
+        print(response)
+    except:
+        pass
 
 while True:
     wifi.check()
